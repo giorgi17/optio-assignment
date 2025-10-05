@@ -1,0 +1,95 @@
+version: '3.9'
+
+services:
+    redis:
+        image: redis:7
+        container_name: optio-redis
+        ports:
+            - '6379:6379'
+        healthcheck:
+            test: ['CMD', 'redis-cli', 'ping']
+            interval: 5s
+            timeout: 3s
+            retries: 5
+
+    rabbitmq:
+        image: rabbitmq:3-management
+        container_name: optio-rabbitmq
+        ports:
+            - '5672:5672'
+            - '15672:15672'
+        healthcheck:
+            test: ['CMD', 'rabbitmq-diagnostics', 'ping']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        environment:
+            - RABBITMQ_DEFAULT_USER=guest
+            - RABBITMQ_DEFAULT_PASS=guest
+
+    elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
+        container_name: optio-elasticsearch
+        environment:
+            - discovery.type=single-node
+            - xpack.security.enabled=false
+            - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+        ports:
+            - '9200:9200'
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    'curl -f http://localhost:9200/_cluster/health || exit 1',
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+
+    api:
+        build: ../backend/services/api
+        container_name: optio-api
+        depends_on:
+            redis:
+                condition: service_healthy
+            rabbitmq:
+                condition: service_healthy
+            elasticsearch:
+                condition: service_healthy
+        environment:
+            - REDIS_URL=redis://redis:6379
+            - AMQP_URL=amqp://guest:guest@rabbitmq:5672
+            - ES_URL=http://elasticsearch:9200
+            - PORT=3000
+        ports:
+            - '3000:3000'
+        restart: unless-stopped
+
+    scheduler:
+        build: ../backend/services/scheduler
+        container_name: optio-scheduler
+        depends_on:
+            redis:
+                condition: service_healthy
+            rabbitmq:
+                condition: service_healthy
+        environment:
+            - REDIS_URL=redis://redis:6379
+            - AMQP_URL=amqp://guest:guest@rabbitmq:5672
+        restart: unless-stopped
+
+    worker:
+        build: ../backend/services/worker
+        container_name: optio-worker
+        depends_on:
+            rabbitmq:
+                condition: service_healthy
+            elasticsearch:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        environment:
+            - REDIS_URL=redis://redis:6379
+            - AMQP_URL=amqp://guest:guest@rabbitmq:5672
+            - ES_URL=http://elasticsearch:9200
+        restart: unless-stopped
