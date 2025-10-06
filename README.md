@@ -52,7 +52,7 @@ PORT=3000
 ## Development Status
 
 - [x] TASK-1: Infrastructure setup
-- [ ] TASK-2: API skeleton
+- [x] TASK-2: API skeleton
 - [ ] TASK-3: Redis state management
 - [ ] TASK-4: Scheduler implementation
 - [ ] TASK-5: Worker + Elasticsearch
