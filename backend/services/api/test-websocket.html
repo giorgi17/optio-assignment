@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket Test Client</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+      }
+      .log {
+        background: #f4f4f4;
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-top: 20px;
+        height: 400px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 12px;
+      }
+      .log-entry {
+        margin: 5px 0;
+        padding: 5px;
+      }
+      .connected {
+        color: green;
+      }
+      .disconnected {
+        color: red;
+      }
+      .message {
+        color: blue;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 5px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>WebSocket Test Client</h1>
+    <p>Testing connection to <strong>http://localhost:3000</strong></p>
+
+    <div>
+      <button onclick="connect()">Connect</button>
+      <button onclick="disconnect()">Disconnect</button>
+      <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <div class="log" id="log"></div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+      let socket = null;
+
+      function log(message, type = 'message') {
+        const logDiv = document.getElementById('log');
+        const entry = document.createElement('div');
+        entry.className = `log-entry ${type}`;
+        entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        logDiv.appendChild(entry);
+        logDiv.scrollTop = logDiv.scrollHeight;
+      }
+
+      function connect() {
+        if (socket && socket.connected) {
+          log('Already connected!', 'message');
+          return;
+        }
+
+        log('Connecting to WebSocket...', 'message');
+
+        socket = io('http://localhost:3000', {
+          transports: ['websocket', 'polling'],
+        });
+
+        socket.on('connect', () => {
+          log('✓ Connected to WebSocket server!', 'connected');
+        });
+
+        socket.on('disconnect', () => {
+          log('✗ Disconnected from WebSocket server', 'disconnected');
+        });
+
+        socket.on('progress', (data) => {
+          log(`Progress update: ${JSON.stringify(data)}`, 'message');
+        });
+
+        socket.on('connect_error', (error) => {
+          log(`Connection error: ${error.message}`, 'disconnected');
+        });
+      }
+
+      function disconnect() {
+        if (socket) {
+          socket.disconnect();
+          log('Disconnected', 'disconnected');
+        }
+      }
+
+      function clearLog() {
+        document.getElementById('log').innerHTML = '';
+      }
+
+      // Auto-connect on page load
+      window.onload = () => {
+        log(
+          'Page loaded. Click "Connect" to test WebSocket connection.',
+          'message',
+        );
+      };
+    </script>
+  </body>
+</html>
