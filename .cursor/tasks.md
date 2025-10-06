@@ -8,7 +8,7 @@
 - Add base `README.md` and `.env.example`.
 **Accept:** `docker compose up` starts infra containers healthy.
 
-## TASK-2: Nest workspace & API skeleton
+## TASK-2: Nest workspace & API skeleton ✅
 - Create Nest app `api` with endpoints: `POST /run {x,y}`, `POST /stop`, `GET /status`.
 - Add WebSocket gateway `/ws` (Socket.IO or WS). Expose `progress` updates.
 **Accept:** `GET /status` returns stub; WS connects from a local client.
