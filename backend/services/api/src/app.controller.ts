@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body } from '@nestjs/common';
 import { AppService } from './app.service';
 import { StartRunDto, RunStatusDto, MessageResponseDto } from './dto/run.dto';
+import { HealthResponseDto } from './dto/health.dto';
 
 @Controller()
 export class AppController {
@@ -21,5 +22,10 @@ export class AppController {
   @Get('status')
   async getStatus(): Promise<RunStatusDto> {
     return this.appService.getStatus();
+  }
+
+  @Get('health')
+  async getHealth(): Promise<HealthResponseDto> {
+    return this.appService.getHealth();
   }
 }

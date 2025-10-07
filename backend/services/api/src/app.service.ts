@@ -5,7 +5,9 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { StartRunDto, RunStatusDto, MessageResponseDto } from './dto/run.dto';
+import { HealthResponseDto } from './dto/health.dto';
 import { RedisService } from './redis/redis.service';
+import { DEFAULT_RUN_STATE } from './redis/redis.interface';
 
 @Injectable()
 export class AppService {
@@ -102,6 +104,7 @@ export class AppService {
 
   /**
    * Get current run status
+   * Gracefully degrades to default state if Redis is unavailable
    */
   async getStatus(): Promise<RunStatusDto> {
     try {
@@ -117,8 +120,61 @@ export class AppService {
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`[api] Failed to get status: ${message}`);
-      throw new InternalServerErrorException('Failed to get status');
+      this.logger.warn(
+        `[api] Redis unavailable, returning default state: ${message}`,
+      );
+
+      // Graceful degradation: return default state instead of failing
+      return {
+        running: DEFAULT_RUN_STATE.running,
+        xTotal: DEFAULT_RUN_STATE.xTotal,
+        yMinutes: DEFAULT_RUN_STATE.yMinutes,
+        enqueued: DEFAULT_RUN_STATE.enqueued,
+        processed: DEFAULT_RUN_STATE.processed,
+        startedAt: undefined,
+      };
+    }
+  }
+
+  /**
+   * Health check endpoint
+   * Returns Redis connection status
+   */
+  async getHealth(): Promise<HealthResponseDto> {
+    try {
+      const isRedisConnected = await this.redisService.isConnected();
+
+      if (isRedisConnected) {
+        return {
+          status: 'ok',
+          redis: {
+            connected: true,
+            message: 'Redis is connected',
+          },
+          timestamp: new Date().toISOString(),
+        };
+      } else {
+        this.logger.warn('[api] Health check: Redis is disconnected');
+        return {
+          status: 'error',
+          redis: {
+            connected: false,
+            message: 'Redis is not connected',
+          },
+          timestamp: new Date().toISOString(),
+        };
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[api] Health check failed: ${message}`);
+      return {
+        status: 'error',
+        redis: {
+          connected: false,
+          message: `Redis connection error: ${message}`,
+        },
+        timestamp: new Date().toISOString(),
+      };
     }
   }
 }
