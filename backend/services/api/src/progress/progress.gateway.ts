@@ -33,7 +33,7 @@ export class ProgressGateway
   broadcastProgress(data: {
     running: boolean;
     xTotal: number;
-    yPerMinute: number;
+    yMinute: number;
     enqueued: number;
     processed: number;
   }): void {

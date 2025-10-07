@@ -33,7 +33,7 @@ export class AppService {
     return {
       running: false,
       xTotal: 0,
-      yPerMinute: 0,
+      yMinutes: 0,
       enqueued: 0,
       processed: 0,
     };
