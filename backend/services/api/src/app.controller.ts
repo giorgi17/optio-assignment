@@ -7,17 +7,19 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Post('run')
-  startRun(@Body() startRunDto: StartRunDto): MessageResponseDto {
+  async startRun(
+    @Body() startRunDto: StartRunDto,
+  ): Promise<MessageResponseDto> {
     return this.appService.startRun(startRunDto);
   }
 
   @Post('stop')
-  stopRun(): MessageResponseDto {
+  async stopRun(): Promise<MessageResponseDto> {
     return this.appService.stopRun();
   }
 
   @Get('status')
-  getStatus(): RunStatusDto {
+  async getStatus(): Promise<RunStatusDto> {
     return this.appService.getStatus();
   }
 }
