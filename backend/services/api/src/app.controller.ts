@@ -1,23 +1,31 @@
 import { Controller, Get, Post, Body } from '@nestjs/common';
 import { AppService } from './app.service';
 import { StartRunDto, RunStatusDto, MessageResponseDto } from './dto/run.dto';
+import { HealthResponseDto } from './dto/health.dto';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Post('run')
-  startRun(@Body() startRunDto: StartRunDto): MessageResponseDto {
+  async startRun(
+    @Body() startRunDto: StartRunDto,
+  ): Promise<MessageResponseDto> {
     return this.appService.startRun(startRunDto);
   }
 
   @Post('stop')
-  stopRun(): MessageResponseDto {
+  async stopRun(): Promise<MessageResponseDto> {
     return this.appService.stopRun();
   }
 
   @Get('status')
-  getStatus(): RunStatusDto {
+  async getStatus(): Promise<RunStatusDto> {
     return this.appService.getStatus();
+  }
+
+  @Get('health')
+  async getHealth(): Promise<HealthResponseDto> {
+    return this.appService.getHealth();
   }
 }

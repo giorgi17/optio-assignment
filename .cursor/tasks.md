@@ -13,9 +13,9 @@
 - Add WebSocket gateway `/ws` (Socket.IO or WS). Expose `progress` updates.
 **Accept:** `GET /status` returns stub; WS connects from a local client.
 
-## TASK-3: Redis state & models
+## TASK-3: Redis state & models ✅
 - Add Redis client and keys (`docs/REDIS_KEYS.md`).
-- Implement `run` state: `xTotal`, `yPerMinute`, `enqueued`, `processed`, `running`.
+- Implement `run` state: `xTotal`, `yMinutes`, `enqueued`, `processed`, `running`.
 **Accept:** Setting run updates Redis; `GET /status` reflects it.
 
 ## TASK-4: Scheduler loop (rate limit Y/min)
