@@ -12,6 +12,7 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(SchedulerService.name);
   private intervalHandle: NodeJS.Timeout | null = null;
   private readonly POLL_INTERVAL_MS = 1000; // Check Redis every second
+  private accumulatedJobs = 0; // Track fractional jobs across iterations
 
   constructor(
     private readonly redisService: RedisService,
@@ -66,6 +67,10 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
    * Example: X=1000, Y=10 means "maximum 1000 records per 10 minutes"
    * Rate = 1000/10 = 100 jobs/minute = 1.67 jobs/second
    *
+   * Fractional Accumulation:
+   * For rates < 1 job/second, we accumulate fractional jobs across iterations.
+   * Example: 0.5 jobs/sec → Second 1: 0.5 (skip), Second 2: 1.0 (enqueue 1), etc.
+   *
    * The scheduler continues processing jobs at this rate until user stops the run.
    */
   private async scheduleJobs(): Promise<void> {
@@ -75,6 +80,7 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
 
       // 2. Check if a run is active
       if (!state.running) {
+        this.accumulatedJobs = 0; // Reset accumulator when run stops
         return; // No active run, nothing to do
       }
 
@@ -83,12 +89,21 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
       const rate = state.xTotal / state.yMinutes; // jobs per minute
       const jobsPerSecond = rate / 60; // convert to jobs per second
 
-      // 4. Calculate how many jobs to enqueue this second
-      // Use Math.ceil to ensure we utilize the full rate capacity
-      const jobsToEnqueue = Math.max(1, Math.ceil(jobsPerSecond));
+      // 4. Accumulate fractional jobs to handle slow rates accurately
+      // Example: 0.5 jobs/sec → accumulate 0.5, 1.0, 1.5, 2.0 → enqueue when >= 1
+      this.accumulatedJobs += jobsPerSecond;
+      const jobsToEnqueue = Math.floor(this.accumulatedJobs);
+      this.accumulatedJobs -= jobsToEnqueue; // Keep remainder for next iteration
+
+      if (jobsToEnqueue === 0) {
+        this.logger.debug(
+          `[scheduler] Accumulating jobs (${this.accumulatedJobs.toFixed(3)}) - rate: ${rate.toFixed(2)} jobs/min`,
+        );
+        return; // Not enough accumulated yet
+      }
 
       this.logger.debug(
-        `[scheduler] Enqueueing ${jobsToEnqueue} jobs (rate limit: ${rate.toFixed(2)} jobs/min, ${jobsPerSecond.toFixed(2)} jobs/sec)`,
+        `[scheduler] Enqueueing ${jobsToEnqueue} jobs (rate limit: ${rate.toFixed(2)} jobs/min, ${jobsPerSecond.toFixed(3)} jobs/sec)`,
       );
 
       // 5. Enqueue jobs to RabbitMQ at the controlled rate
