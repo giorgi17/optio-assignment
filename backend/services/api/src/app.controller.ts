@@ -1,6 +1,11 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body } from '@nestjs/common';
 import { AppService } from './app.service';
-import { StartRunDto, RunStatusDto, MessageResponseDto } from './dto/run.dto';
+import {
+  StartRunDto,
+  UpdateRunDto,
+  RunStatusDto,
+  MessageResponseDto,
+} from './dto/run.dto';
 import { HealthResponseDto } from './dto/health.dto';
 
 @Controller()
@@ -12,6 +17,13 @@ export class AppController {
     @Body() startRunDto: StartRunDto,
   ): Promise<MessageResponseDto> {
     return this.appService.startRun(startRunDto);
+  }
+
+  @Put('run')
+  async updateRun(
+    @Body() updateRunDto: UpdateRunDto,
+  ): Promise<MessageResponseDto> {
+    return this.appService.updateRun(updateRunDto);
   }
 
   @Post('stop')

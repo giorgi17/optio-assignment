@@ -44,10 +44,19 @@ PORT=3000
 ## Run Demo
 
 1. Open Frontend at http://localhost:4200
-2. Set X (total jobs) and Y (rate per minute)
+2. Set X and Y parameters (X jobs per Y minutes - defines processing rate)
 3. Click **Start** and watch live progress
-4. Test scaling: `docker compose up -d --scale worker=2`
-5. Test resilience: Restart services and verify no data loss or duplicates
+4. **Dynamically adjust rate**: Change X/Y while running to speed up or slow down
+5. Test scaling: `docker compose up -d --scale worker=2`
+6. Test resilience: Restart services and verify no data loss or duplicates
+
+## API Endpoints
+
+- `POST /api/run` - Start a new run with rate parameters `{ x, y }`
+- `PUT /api/run` - **Update X/Y parameters dynamically while running** `{ x, y }`
+- `POST /api/stop` - Stop the current run
+- `GET /api/status` - Get current run status and progress
+- `GET /api/health` - Check service health
 
 ## Development Status
 
