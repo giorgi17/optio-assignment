@@ -70,7 +70,7 @@ export class ElasticsearchService implements OnModuleInit, OnModuleDestroy {
               jobId: { type: 'integer' },
               runId: { type: 'keyword' },
               input: { type: 'integer' },
-              output: { type: 'integer' },
+              output: { type: 'long' }, // Changed from integer to long for large numbers
               processedAt: { type: 'date' },
               timestamp: { type: 'date' },
             },
