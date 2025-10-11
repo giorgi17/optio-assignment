@@ -58,6 +58,23 @@ PORT=3000
 - `GET /api/status` - Get current run status and progress
 - `GET /api/health` - Check service health
 
+## Data Management
+
+The system accumulates data in Elasticsearch as jobs are processed. For development and testing, you can clean up all data between runs:
+
+```bash
+# Clean all test data (Elasticsearch, RabbitMQ, Redis)
+./cleanup.sh
+```
+
+This will:
+- Stop any running job
+- Delete all Elasticsearch documents
+- Purge RabbitMQ queue
+- Reset Redis state
+
+**Note:** In production, consider implementing data retention policies (e.g., delete records older than 30 days).
+
 ## Development Status
 
 - [x] TASK-1: Infrastructure setup ✅

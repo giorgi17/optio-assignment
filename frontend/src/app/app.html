@@ -1,31 +1,133 @@
 <div class="container">
+  <!-- Header -->
   <header>
     <h1>Optio Assignment</h1>
     <h2>Distributed Job Processing System</h2>
   </header>
 
+  <!-- Main Content -->
   <main>
-    <div class="section">
-      <h3>✅ Section 2: Services Layer - Complete!</h3>
-      <p>Open your browser console (F12) to see:</p>
-      <ul>
-        <li>✅ API service testing <code>/api/status</code></li>
-        <li>✅ WebSocket service connecting</li>
-        <li>✅ Progress updates streaming</li>
-      </ul>
+    <!-- Error/Success Messages -->
+    @if (errorMessage) {
+    <div class="alert alert-error">⚠️ {{ errorMessage }}</div>
+    } @if (successMessage) {
+    <div class="alert alert-success">✅ {{ successMessage }}</div>
+    }
 
-      <div class="info-box">
-        <strong>🔍 What's happening:</strong>
-        <ol>
-          <li><code>api.service.ts</code> - Making HTTP calls to backend</li>
-          <li><code>websocket.service.ts</code> - Connected to Socket.IO</li>
-          <li>Both services are injected and working!</li>
-        </ol>
+    <!-- Control Panel -->
+    <section class="panel control-panel">
+      <h3>Control Panel</h3>
+      <div class="controls">
+        <div class="input-group">
+          <label for="xInput">
+            X (jobs):
+            <input type="number" id="xInput" [(ngModel)]="xInput" min="1" placeholder="100" />
+          </label>
+        </div>
+
+        <div class="input-group">
+          <label for="yInput">
+            Y (minutes):
+            <input type="number" id="yInput" [(ngModel)]="yInput" min="1" placeholder="1" />
+          </label>
+        </div>
+
+        <div class="button-group">
+          <button class="btn btn-primary" (click)="startRun()" [disabled]="running">▶ Start</button>
+
+          <button class="btn btn-danger" (click)="stopRun()" [disabled]="!running">⏹ Stop</button>
+
+          <button
+            class="btn btn-secondary"
+            (click)="updateRun()"
+            [disabled]="!running"
+            title="Update rate while running"
+          >
+            🔄 Update Rate
+          </button>
+        </div>
+      </div>
+      <p class="hint">
+        Rate: {{ xInput }} jobs per {{ yInput }} minute{{ yInput > 1 ? 's' : '' }} =
+        {{ (xInput / yInput).toFixed(1) }} jobs/min
+      </p>
+    </section>
+
+    <!-- Status Panel -->
+    <section class="panel status-panel">
+      <h3>Status</h3>
+      <div class="status-grid">
+        <div class="status-item">
+          <span class="status-label">Running:</span>
+          <span class="status-value">
+            <span [class]="running ? 'dot dot-green' : 'dot dot-gray'"></span>
+            {{ running ? 'Yes' : 'No' }}
+          </span>
+        </div>
+
+        <div class="status-item">
+          <span class="status-label">Rate:</span>
+          <span class="status-value"
+            >{{ xTotal }} jobs per {{ yMinutes }} minute{{ yMinutes > 1 ? 's' : '' }}</span
+          >
+        </div>
+
+        <div class="status-item">
+          <span class="status-label">Started:</span>
+          <span class="status-value">{{ formatTime(startedAt) }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Progress Panel -->
+    <section class="panel progress-panel">
+      <h3>Progress</h3>
+
+      <div class="progress-item">
+        <div class="progress-header">
+          <span>Enqueued</span>
+          <span class="progress-count">{{ formatNumber(enqueued) }}</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar progress-bar-enqueued" style="width: 100%"></div>
+        </div>
       </div>
 
-      <p class="next-step">
-        <strong>Next:</strong> Section 3 will build the UI components with forms and controls!
-      </p>
-    </div>
+      <div class="progress-item">
+        <div class="progress-header">
+          <span>Processed</span>
+          <span class="progress-count">{{ formatNumber(processed) }}</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar progress-bar-processed" [style.width.%]="progressPercent"></div>
+        </div>
+      </div>
+
+      <div class="progress-stats">
+        <div class="stat">
+          <span class="stat-label">Progress:</span>
+          <span class="stat-value">{{ progressPercent.toFixed(1) }}%</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Current Rate:</span>
+          <span class="stat-value">{{ currentRate }} jobs/min</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Connection Status -->
+    <section class="panel connection-panel">
+      <h3>Connection Status</h3>
+      <div class="connection-grid">
+        <div class="connection-item">
+          <span [class]="apiConnected ? 'dot dot-green' : 'dot dot-red'"> </span>
+          <span>API: {{ apiConnected ? 'Connected' : 'Disconnected' }}</span>
+        </div>
+        <div class="connection-item">
+          <span [class]="wsConnected ? 'dot dot-green' : 'dot dot-red'"> </span>
+          <span>WebSocket: {{ wsConnected ? 'Connected' : 'Disconnected' }}</span>
+        </div>
+      </div>
+    </section>
   </main>
 </div>
