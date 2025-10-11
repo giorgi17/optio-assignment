@@ -47,6 +47,8 @@ fi
 echo ""
 echo "4️⃣  Resetting Redis state..."
 docker exec optio-redis redis-cli DEL optio:run > /dev/null 2>&1 || true
+docker exec optio-redis redis-cli DEL optio:enqueued > /dev/null 2>&1 || true
+docker exec optio-redis redis-cli DEL optio:processed > /dev/null 2>&1 || true
 docker exec optio-redis redis-cli DEL optio:queue:nextId > /dev/null 2>&1 || true
 docker exec optio-redis redis-cli DEL optio:metrics:timestamps > /dev/null 2>&1 || true
 echo "   ✅ Redis state reset"

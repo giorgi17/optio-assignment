@@ -60,7 +60,20 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         return DEFAULT_RUN_STATE;
       }
 
-      return JSON.parse(data) as RunState;
+      const baseState = JSON.parse(data) as Omit<
+        RunState,
+        'enqueued' | 'processed'
+      >;
+
+      // Get counters from separate keys
+      const enqueued = await this.getEnqueuedCount();
+      const processed = await this.getProcessedCount();
+
+      return {
+        ...baseState,
+        enqueued,
+        processed,
+      };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`[scheduler] Failed to get run state: ${message}`);
@@ -69,29 +82,37 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Increment the enqueued counter in the run state
-   * This is an atomic operation to safely track how many jobs have been enqueued
+   * Get the enqueued counter
+   */
+  async getEnqueuedCount(): Promise<number> {
+    try {
+      const result = await this.client.get(REDIS_KEYS.ENQUEUED);
+      return result ? parseInt(result, 10) : 0;
+    } catch (error) {
+      return 0;
+    }
+  }
+
+  /**
+   * Get the processed counter
+   */
+  async getProcessedCount(): Promise<number> {
+    try {
+      const result = await this.client.get(REDIS_KEYS.PROCESSED);
+      return result ? parseInt(result, 10) : 0;
+    } catch (error) {
+      return 0;
+    }
+  }
+
+  /**
+   * Increment the enqueued counter
+   * Uses Redis INCR for atomic increment (no race conditions!)
    */
   async incrementEnqueued(): Promise<number> {
     try {
-      // Use a Lua script for atomic read-modify-write
-      const script = `
-        local key = KEYS[1]
-        local data = redis.call('GET', key)
-        if not data then
-          return 0
-        end
-        local state = cjson.decode(data)
-        state.enqueued = state.enqueued + 1
-        redis.call('SET', key, cjson.encode(state))
-        return state.enqueued
-      `;
-
-      const result = (await this.client.eval(
-        script,
-        1,
-        REDIS_KEYS.RUN,
-      )) as number;
+      // Redis INCR is atomic - no Lua script needed!
+      const result = await this.client.incr(REDIS_KEYS.ENQUEUED);
 
       this.logger.debug(
         `[scheduler] Enqueued counter incremented to: ${result}`,
