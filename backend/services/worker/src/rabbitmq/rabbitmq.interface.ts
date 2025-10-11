@@ -7,4 +7,3 @@ export interface JobMessage {
   };
   timestamp: string;
 }
-

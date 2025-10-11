@@ -77,7 +77,9 @@ export class ElasticsearchService implements OnModuleInit, OnModuleDestroy {
           },
         });
 
-        this.logger.log(`[worker] Index '${this.indexName}' created successfully`);
+        this.logger.log(
+          `[worker] Index '${this.indexName}' created successfully`,
+        );
       } else {
         this.logger.log(`[worker] Index '${this.indexName}' already exists`);
       }
@@ -101,12 +103,12 @@ export class ElasticsearchService implements OnModuleInit, OnModuleDestroy {
         refresh: false, // Don't refresh immediately for better performance
       });
 
-      this.logger.debug(
-        `[worker] Job ${jobResult.jobId} indexed successfully`,
-      );
+      this.logger.debug(`[worker] Job ${jobResult.jobId} indexed successfully`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`[worker] Failed to index job ${jobResult.jobId}: ${message}`);
+      this.logger.error(
+        `[worker] Failed to index job ${jobResult.jobId}: ${message}`,
+      );
       throw error;
     }
   }
@@ -132,4 +134,3 @@ export class ElasticsearchService implements OnModuleInit, OnModuleDestroy {
     return this.client;
   }
 }
-

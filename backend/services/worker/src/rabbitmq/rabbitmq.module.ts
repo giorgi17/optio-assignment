@@ -6,4 +6,3 @@ import { RabbitMQService } from './rabbitmq.service';
   exports: [RabbitMQService],
 })
 export class RabbitMQModule {}
-

@@ -7,4 +7,3 @@ import { ElasticsearchService } from './elasticsearch.service';
   exports: [ElasticsearchService],
 })
 export class ElasticsearchModule {}
-

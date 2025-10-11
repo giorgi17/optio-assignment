@@ -144,19 +144,26 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
    */
   private async startConsuming(): Promise<void> {
     if (!this.channel) {
-      this.logger.error('[worker] Cannot start consuming: channel not available');
+      this.logger.error(
+        '[worker] Cannot start consuming: channel not available',
+      );
       return;
     }
 
     try {
       await this.channel.consume(
         this.queueName,
-        async (msg: ConsumeMessage | null) => {
+        (msg: ConsumeMessage | null) => {
           if (!msg) {
             return;
           }
 
-          await this.handleMessage(msg);
+          this.handleMessage(msg).catch((err) => {
+            const message = err instanceof Error ? err.message : String(err);
+            this.logger.error(
+              `[worker] Unhandled error in message handler: ${message}`,
+            );
+          });
         },
         {
           noAck: false, // Manual acknowledgment
@@ -179,7 +186,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   private async handleMessage(msg: ConsumeMessage): Promise<void> {
     try {
       // Parse message
-      const job: JobMessage = JSON.parse(msg.content.toString());
+      const job: JobMessage = JSON.parse(msg.content.toString()) as JobMessage;
       this.logger.log(`[worker] Processing job ${job.jobId}`);
 
       // Process the job
@@ -244,4 +251,3 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     };
   }
 }
-
