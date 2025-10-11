@@ -63,7 +63,7 @@ PORT=3000
 - [x] TASK-1: Infrastructure setup
 - [x] TASK-2: API skeleton
 - [x] TASK-3: Redis state management
-- [ ] TASK-4: Scheduler implementation
+- [x] TASK-4: Scheduler implementation ✅
 - [ ] TASK-5: Worker + Elasticsearch
 - [ ] TASK-6: WebSocket progress updates
 - [ ] TASK-7: Angular UI
