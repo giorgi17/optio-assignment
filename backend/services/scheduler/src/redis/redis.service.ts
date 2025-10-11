@@ -5,7 +5,7 @@ import {
   OnModuleDestroy,
 } from '@nestjs/common';
 import Redis from 'ioredis';
-import { REDIS_KEYS } from './redis.constants';
+import { REDIS_KEYS, REDIS_CHANNELS } from './redis.constants';
 import { RunState, DEFAULT_RUN_STATE } from './redis.interface';
 
 @Injectable()
@@ -96,11 +96,40 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       this.logger.debug(
         `[scheduler] Enqueued counter incremented to: ${result}`,
       );
+
+      // Publish progress update to Redis channel (every 10 jobs to avoid spam)
+      if (result % 10 === 0) {
+        await this.publishProgressUpdate();
+      }
+
       return result;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`[scheduler] Failed to increment enqueued: ${message}`);
       throw error;
+    }
+  }
+
+  /**
+   * Publish progress update to Redis Pub/Sub channel
+   * This notifies the API to broadcast updates via WebSocket
+   */
+  private async publishProgressUpdate(): Promise<void> {
+    try {
+      const state = await this.getRunState();
+      await this.client.publish(
+        REDIS_CHANNELS.PROGRESS_UPDATE,
+        JSON.stringify(state),
+      );
+      this.logger.debug(
+        '[scheduler] Published progress update to Redis channel',
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `[scheduler] Failed to publish progress update: ${message}`,
+      );
+      // Don't throw - publishing is not critical for job enqueueing
     }
   }
 

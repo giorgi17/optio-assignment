@@ -60,12 +60,12 @@ PORT=3000
 
 ## Development Status
 
-- [x] TASK-1: Infrastructure setup
-- [x] TASK-2: API skeleton
-- [x] TASK-3: Redis state management
+- [x] TASK-1: Infrastructure setup ✅
+- [x] TASK-2: API skeleton ✅
+- [x] TASK-3: Redis state management ✅
 - [x] TASK-4: Scheduler implementation ✅
-- [ ] TASK-5: Worker + Elasticsearch
-- [ ] TASK-6: WebSocket progress updates
+- [x] TASK-5: Worker + Elasticsearch ✅
+- [x] TASK-6: WebSocket progress updates ✅
 - [ ] TASK-7: Angular UI
 - [ ] TASK-8: Resilience testing
 - [ ] TASK-9: Horizontal scaling

@@ -23,12 +23,12 @@
 - Use durable queue, message persistence.
 **Accept:** With `X=10`, `Y=1`, ~10 jobs/min reach queue.
 
-## TASK-5: Worker → ES indexing
+## TASK-5: Worker → ES indexing ✅
 - Implement RMQ consumer with `prefetch=10`, manual `ack` after successful ES upsert (`_id=jobId`).
 - On failure: log, `nack`/retry with small delay.
 **Accept:** ES `_count` grows; duplicates don't create multiple docs.
 
-## TASK-6: Progress & WS updates
+## TASK-6: Progress & WS updates ✅
 - Worker increments Redis `processed`. API broadcasts over WS on change.
 **Accept:** Frontend sees live `enqueued`/`processed` moving.
 
