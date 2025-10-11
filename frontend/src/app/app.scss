@@ -32,3 +32,55 @@ main {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.section {
+  h3 {
+    color: #667eea;
+    margin-top: 0;
+  }
+
+  ul {
+    line-height: 2;
+    
+    li {
+      margin-bottom: 8px;
+    }
+  }
+
+  code {
+    background: #f5f7fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #e83e8c;
+  }
+}
+
+.info-box {
+  background: #f0f4ff;
+  border-left: 4px solid #667eea;
+  padding: 15px 20px;
+  margin: 20px 0;
+  border-radius: 4px;
+
+  strong {
+    color: #667eea;
+  }
+
+  ol {
+    margin: 10px 0 0 0;
+    padding-left: 20px;
+  }
+}
+
+.next-step {
+  margin-top: 30px;
+  padding: 15px;
+  background: #d4edda;
+  border-left: 4px solid #28a745;
+  border-radius: 4px;
+
+  strong {
+    color: #155724;
+  }
+}
