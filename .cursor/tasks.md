@@ -18,10 +18,10 @@
 - Implement `run` state: `xTotal`, `yMinutes`, `enqueued`, `processed`, `running`.
 **Accept:** Setting run updates Redis; `GET /status` reflects it.
 
-## TASK-4: Scheduler loop (rate limit Y/min)
+## TASK-4: Scheduler loop (rate limit Y/min) ✅
 - Implement periodic loop or token-bucket; enqueue jobs with `jobId` to RMQ.
 - Use durable queue, message persistence.
-**Accept:** With `X=10`, `Y=5`, only ~5 jobs/min reach queue.
+**Accept:** With `X=10`, `Y=1`, ~10 jobs/min reach queue.
 
 ## TASK-5: Worker → ES indexing
 - Implement RMQ consumer with `prefetch=10`, manual `ack` after successful ES upsert (`_id=jobId`).

@@ -3,6 +3,11 @@ export class StartRunDto {
   y: number;
 }
 
+export class UpdateRunDto {
+  x: number;
+  y: number;
+}
+
 export class RunStatusDto {
   running: boolean;
   xTotal: number;

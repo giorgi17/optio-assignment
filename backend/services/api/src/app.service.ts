@@ -4,7 +4,12 @@ import {
   ConflictException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { StartRunDto, RunStatusDto, MessageResponseDto } from './dto/run.dto';
+import {
+  StartRunDto,
+  UpdateRunDto,
+  RunStatusDto,
+  MessageResponseDto,
+} from './dto/run.dto';
 import { HealthResponseDto } from './dto/health.dto';
 import { RedisService } from './redis/redis.service';
 import { DEFAULT_RUN_STATE } from './redis/redis.interface';
@@ -67,6 +72,56 @@ export class AppService {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`[api] Failed to start run: ${message}`);
       throw new InternalServerErrorException('Failed to start run');
+    }
+  }
+
+  /**
+   * Update X and Y parameters of the current run (dynamic rate adjustment)
+   * Allows changing the processing rate while the run is active
+   */
+  async updateRun(updateRunDto: UpdateRunDto): Promise<MessageResponseDto> {
+    try {
+      this.logger.log(
+        `[api] Updating run parameters: X=${updateRunDto.x}, Y=${updateRunDto.y}`,
+      );
+
+      // Check if a run is active
+      const currentState = await this.redisService.getRunState();
+      if (!currentState.running) {
+        this.logger.warn('[api] Attempted to update run but none is active');
+        throw new ConflictException(
+          'No run is currently active. Start a run first.',
+        );
+      }
+
+      // Validate input
+      if (updateRunDto.x <= 0 || updateRunDto.y <= 0) {
+        throw new ConflictException('X and Y must be positive numbers');
+      }
+
+      // Update X and Y parameters (keep counters and running state intact)
+      await this.redisService.updateRunState({
+        xTotal: updateRunDto.x,
+        yMinutes: updateRunDto.y,
+      });
+
+      const newRate = updateRunDto.x / updateRunDto.y;
+      this.logger.log(
+        `[api] Run parameters updated successfully: X=${updateRunDto.x}, Y=${updateRunDto.y} (new rate: ${newRate.toFixed(2)} jobs/min)`,
+      );
+
+      return {
+        message: 'Run parameters updated',
+        x: updateRunDto.x,
+        y: updateRunDto.y,
+      };
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error;
+      }
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[api] Failed to update run: ${message}`);
+      throw new InternalServerErrorException('Failed to update run parameters');
     }
   }
 
