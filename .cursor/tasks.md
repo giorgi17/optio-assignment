@@ -45,6 +45,6 @@
 - `docker compose up --scale worker=2`; verify fair consumption (via counts/logs).
 **Accept:** Throughput increases; no errors from concurrent workers.
 
-## TASK-10: Polish & Docs
+## TASK-10: Polish & Docs ✅
 - Fill `docs/ACCEPTANCE_CRITERIA.md`, `docs/ARCHITECTURE.md`, update README with commands and examples.
 **Accept:** Reviewer can run and see screenshots / sample curl.
