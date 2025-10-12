@@ -100,7 +100,6 @@ services:
 
     worker:
         build: ../backend/services/worker
-        container_name: optio-worker
         depends_on:
             rabbitmq:
                 condition: service_healthy

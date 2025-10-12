@@ -80,7 +80,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     try {
       const result = await this.client.get(REDIS_KEYS.ENQUEUED);
       return result ? parseInt(result, 10) : 0;
-    } catch (error) {
+    } catch {
       return 0;
     }
   }
@@ -92,7 +92,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     try {
       const result = await this.client.get(REDIS_KEYS.PROCESSED);
       return result ? parseInt(result, 10) : 0;
-    } catch (error) {
+    } catch {
       return 0;
     }
   }
