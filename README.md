@@ -86,4 +86,15 @@ This will:
 - [x] TASK-7: Angular UI ✅
 - [x] TASK-8: Resilience testing ✅
 - [x] TASK-9: Horizontal scaling ✅
-- [ ] TASK-10: Documentation
+- [x] TASK-10: Documentation ✅
+
+## Documentation
+
+See `docs/` folder for detailed documentation:
+- **ARCHITECTURE.md** - System design and technology choices
+- **ARCHITECTURE_DIAGRAM.md** - Visual data flow diagram
+- **ACCEPTANCE_CRITERIA.md** - Requirements verification (all ✅)
+- **RESILIENCE_TESTS.md** - Service restart tests and API performance
+- **SCALING_TESTS.md** - Horizontal scaling verification
+- **WEBSOCKET_TESTING.md** - Real-time update testing
+- **DOCKER_FRONTEND.md** - Frontend Docker integration

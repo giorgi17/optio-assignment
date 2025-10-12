@@ -132,7 +132,7 @@ The `progress` event emits the following data:
    - Should see: `[api] Received progress update: ...`
 
 2. Check Worker/Scheduler logs for publishing:
-   - `docker logs optio-worker --tail 50`
+   - `docker logs worker --tail 50`
    - Should see: `[worker] Published progress update to Redis channel`
 
 3. Verify Redis connection:

@@ -8,7 +8,7 @@
 
 ## Test 1: Worker Restart During Active Run
 - **Date:** October 12, 2025 @ 22:29
-- **Test Scenario:** Restarted worker container mid-run using `docker restart optio-worker`
+- **Test Scenario:** Restarted worker container mid-run using `docker restart worker`
 - **Initial State:** 
   - Active run: X=100, Y=1 (100 jobs/min)
   - ~110,000 jobs enqueued
