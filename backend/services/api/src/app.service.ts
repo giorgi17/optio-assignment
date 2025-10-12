@@ -41,6 +41,18 @@ export class AppService {
         );
       }
 
+      // Check if workers are still processing jobs from previous run
+      const jobsInProgress = currentState.enqueued - currentState.processed;
+      if (jobsInProgress > 0) {
+        this.logger.warn(
+          `[api] Attempted to start run while ${jobsInProgress} jobs from previous run are still being processed`,
+        );
+        throw new ConflictException(
+          `Cannot start new run: ${jobsInProgress.toLocaleString()} jobs from previous run still being processed. ` +
+            `Please wait for workers to finish, or run the cleanup script to purge the queue.`,
+        );
+      }
+
       // Validate input
       if (startRunDto.x <= 0 || startRunDto.y <= 0) {
         throw new ConflictException('X and Y must be positive numbers');

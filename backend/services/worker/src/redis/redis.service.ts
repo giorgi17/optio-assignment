@@ -51,7 +51,21 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       if (!state) {
         return DEFAULT_RUN_STATE;
       }
-      return JSON.parse(state) as RunState;
+
+      const baseState = JSON.parse(state) as Omit<
+        RunState,
+        'enqueued' | 'processed'
+      >;
+
+      // Get counters from separate keys
+      const enqueued = await this.getEnqueuedCount();
+      const processed = await this.getProcessedCount();
+
+      return {
+        ...baseState,
+        enqueued,
+        processed,
+      };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`[worker] Failed to get run state: ${message}`);
@@ -60,29 +74,37 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * Get the enqueued counter
+   */
+  async getEnqueuedCount(): Promise<number> {
+    try {
+      const result = await this.client.get(REDIS_KEYS.ENQUEUED);
+      return result ? parseInt(result, 10) : 0;
+    } catch (error) {
+      return 0;
+    }
+  }
+
+  /**
+   * Get the processed counter
+   */
+  async getProcessedCount(): Promise<number> {
+    try {
+      const result = await this.client.get(REDIS_KEYS.PROCESSED);
+      return result ? parseInt(result, 10) : 0;
+    } catch (error) {
+      return 0;
+    }
+  }
+
+  /**
    * Atomically increment the 'processed' counter in Redis
-   * Uses Lua script to ensure atomicity across multiple workers
+   * Uses Redis INCR for atomic increment (no race conditions!)
    */
   async incrementProcessed(): Promise<number> {
     try {
-      // Lua script to atomically read, increment, and write the processed count
-      const script = `
-        local runState = redis.call('GET', KEYS[1])
-        if runState then
-          local state = cjson.decode(runState)
-          state.processed = state.processed + 1
-          redis.call('SET', KEYS[1], cjson.encode(state))
-          return state.processed
-        else
-          return -1
-        end
-      `;
-
-      const result = (await this.client.eval(
-        script,
-        1,
-        REDIS_KEYS.RUN,
-      )) as number;
+      // Redis INCR is atomic - no Lua script needed!
+      const result = await this.client.incr(REDIS_KEYS.PROCESSED);
 
       this.logger.debug(`[worker] Processed counter incremented to: ${result}`);
 

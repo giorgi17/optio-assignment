@@ -32,11 +32,11 @@
 - Worker increments Redis `processed`. API broadcasts over WS on change.
 **Accept:** Frontend sees live `enqueued`/`processed` moving.
 
-## TASK-7: Angular minimal UI
+## TASK-7: Angular minimal UI ✅
 - One page: inputs for X/Y, Start/Stop buttons, current status panel, simple progress bar and rates.
 **Accept:** Manual run visible end-to-end.
 
-## TASK-8: Resilience drills
+## TASK-8: Resilience drills ✅
 - Restart worker/API while running; verify no data loss, resumed processing, WS recovers.
 - Verify API response times < 200ms for GET /status
 **Accept:** After restarts, counts continue correctly; no duplicates in ES.

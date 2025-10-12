@@ -60,7 +60,20 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
         return DEFAULT_RUN_STATE;
       }
 
-      return JSON.parse(data) as RunState;
+      const baseState = JSON.parse(data) as Omit<
+        RunState,
+        'enqueued' | 'processed'
+      >;
+
+      // Get counters from separate keys
+      const enqueued = await this.getEnqueuedCount();
+      const processed = await this.getProcessedCount();
+
+      return {
+        ...baseState,
+        enqueued,
+        processed,
+      };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`[api] Failed to get run state: ${message}`);
@@ -69,12 +82,47 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * Get the enqueued counter
+   */
+  async getEnqueuedCount(): Promise<number> {
+    try {
+      const result = await this.client.get(REDIS_KEYS.ENQUEUED);
+      return result ? parseInt(result, 10) : 0;
+    } catch (error) {
+      return 0;
+    }
+  }
+
+  /**
+   * Get the processed counter
+   */
+  async getProcessedCount(): Promise<number> {
+    try {
+      const result = await this.client.get(REDIS_KEYS.PROCESSED);
+      return result ? parseInt(result, 10) : 0;
+    } catch (error) {
+      return 0;
+    }
+  }
+
+  /**
    * Set the run state in Redis
+   * Note: Counters (enqueued/processed) are stored separately
    */
   async setRunState(state: RunState): Promise<void> {
     try {
-      await this.client.set(REDIS_KEYS.RUN, JSON.stringify(state));
-      this.logger.log(`[api] Run state updated: ${JSON.stringify(state)}`);
+      // Store base state (without counters)
+      const { enqueued, processed, ...baseState } = state;
+
+      await this.client.set(REDIS_KEYS.RUN, JSON.stringify(baseState));
+
+      // Set counters separately (only if starting a new run)
+      if (state.running && state.startedAt) {
+        await this.client.set(REDIS_KEYS.ENQUEUED, enqueued.toString());
+        await this.client.set(REDIS_KEYS.PROCESSED, processed.toString());
+      }
+
+      this.logger.log(`[api] Run state updated: ${JSON.stringify(baseState)}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`[api] Failed to set run state: ${message}`);
@@ -117,6 +165,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   async resetRunState(): Promise<void> {
     try {
       await this.client.del(REDIS_KEYS.RUN);
+      await this.client.del(REDIS_KEYS.ENQUEUED);
+      await this.client.del(REDIS_KEYS.PROCESSED);
       await this.client.del(REDIS_KEYS.QUEUE_NEXT_ID);
       this.logger.log('[api] Run state reset');
     } catch (error) {
