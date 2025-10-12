@@ -13,6 +13,7 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
   private intervalHandle: NodeJS.Timeout | null = null;
   private readonly POLL_INTERVAL_MS = 1000; // Check Redis every second
   private accumulatedJobs = 0; // Track fractional jobs across iterations
+  private isProcessing = false; // Prevent overlapping interval executions
 
   constructor(
     private readonly redisService: RedisService,
@@ -36,7 +37,14 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
     this.logger.log('[scheduler] Starting scheduler loop...');
 
     this.intervalHandle = setInterval(() => {
-      void this.scheduleJobs();
+      // Prevent overlapping executions if previous iteration is still running
+      if (!this.isProcessing) {
+        void this.scheduleJobs();
+      } else {
+        this.logger.warn(
+          '[scheduler] Previous iteration still running, skipping this interval',
+        );
+      }
     }, this.POLL_INTERVAL_MS);
 
     this.logger.log(
@@ -74,6 +82,13 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
    * The scheduler continues processing jobs at this rate until user stops the run.
    */
   private async scheduleJobs(): Promise<void> {
+    // Guard against race conditions from overlapping setInterval calls
+    if (this.isProcessing) {
+      return;
+    }
+
+    this.isProcessing = true;
+
     try {
       // 1. Read current run state from Redis
       const state = await this.redisService.getRunState();
@@ -108,11 +123,10 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
 
       // 5. Enqueue jobs to RabbitMQ at the controlled rate
       for (let i = 0; i < jobsToEnqueue; i++) {
-        // Get current state for accurate job ID
-        const currentState = await this.redisService.getRunState();
+        // Atomically increment counter FIRST to get unique job ID (prevents race conditions!)
+        const jobId = await this.redisService.incrementEnqueued();
 
         // Create job message with unique ID
-        const jobId = currentState.enqueued + 1;
         const message = {
           jobId,
           data: {
@@ -126,13 +140,12 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
         // Publish to RabbitMQ
         const published = this.rabbitMQService.publishJob(message);
 
-        if (published) {
-          // Increment enqueued counter in Redis (atomic operation)
-          await this.redisService.incrementEnqueued();
-        } else {
+        if (!published) {
           this.logger.warn(
             `[scheduler] Failed to publish job ${jobId}, will retry next interval`,
           );
+          // Note: Job ID was already incremented, so there will be a gap in job IDs
+          // This is acceptable - ensures no duplicate IDs and maintains atomicity
           break; // Stop enqueueing if RabbitMQ is unavailable
         }
       }
@@ -144,6 +157,9 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`[scheduler] Error in scheduling loop: ${message}`);
+    } finally {
+      // Always reset the processing flag, even if an error occurred
+      this.isProcessing = false;
     }
   }
 
