@@ -146,10 +146,3 @@ The `progress` event emits the following data:
 
 - Ensure API is running: `curl http://localhost:3000/api/health`
 - Check CORS configuration in `backend/services/api/src/main.ts`
-
-## Next Steps
-
-- [ ] Integrate WebSocket client into Angular UI (TASK-7)
-- [ ] Display progress bar and live metrics
-- [ ] Show connection status indicator
-

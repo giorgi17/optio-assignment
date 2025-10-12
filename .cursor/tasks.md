@@ -41,7 +41,7 @@
 - Verify API response times < 200ms for GET /status
 **Accept:** After restarts, counts continue correctly; no duplicates in ES.
 
-## TASK-9: Scale out
+## TASK-9: Scale out ✅
 - `docker compose up --scale worker=2`; verify fair consumption (via counts/logs).
 **Accept:** Throughput increases; no errors from concurrent workers.
 
