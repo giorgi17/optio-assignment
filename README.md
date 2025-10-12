@@ -83,7 +83,7 @@ This will:
 - [x] TASK-4: Scheduler implementation ✅
 - [x] TASK-5: Worker + Elasticsearch ✅
 - [x] TASK-6: WebSocket progress updates ✅
-- [ ] TASK-7: Angular UI
-- [ ] TASK-8: Resilience testing
+- [x] TASK-7: Angular UI ✅
+- [x] TASK-8: Resilience testing ✅
 - [ ] TASK-9: Horizontal scaling
 - [ ] TASK-10: Documentation
