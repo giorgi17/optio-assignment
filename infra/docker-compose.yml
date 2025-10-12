@@ -113,3 +113,12 @@ services:
             - AMQP_URL=amqp://guest:guest@rabbitmq:5672
             - ES_URL=http://elasticsearch:9200
         restart: unless-stopped
+
+    frontend:
+        build: ../frontend
+        container_name: optio-frontend
+        depends_on:
+            - api
+        ports:
+            - '4200:80'
+        restart: unless-stopped

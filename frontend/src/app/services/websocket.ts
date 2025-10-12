@@ -29,7 +29,11 @@ export class Websocket {
 
     console.log('[WebSocket] Connecting to server...');
 
-    this.socket = io('http://localhost:3000', {
+    // Use relative URL - works in both dev (proxy) and production (nginx)
+    // In dev: proxy.conf.json forwards to localhost:3000
+    // In production: nginx forwards to api:3000
+    this.socket = io('/', {
+      path: '/socket.io',
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,
