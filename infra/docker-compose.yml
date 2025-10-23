@@ -70,7 +70,7 @@ services:
         build:
             context: ../backend
             dockerfile: services/api/Dockerfile
-        container_name: optio-api
+        # No container_name - allows scaling: docker compose up --scale api=3
         depends_on:
             redis:
                 condition: service_healthy
