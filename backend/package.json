@@ -1,0 +1,24 @@
+{
+    "name": "optio-backend",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Optio backend monorepo",
+    "workspaces": [
+        "lib",
+        "services/api",
+        "services/scheduler",
+        "services/worker"
+    ],
+    "scripts": {
+        "install:all": "npm install",
+        "build:lib": "npm run build -w lib",
+        "clean": "rm -rf node_modules lib/node_modules services/*/node_modules",
+        "dev:api": "npm run start:dev -w services/api",
+        "dev:scheduler": "npm run start:dev -w services/scheduler",
+        "dev:worker": "npm run start:dev -w services/worker",
+        "build:api": "npm run build -w services/api",
+        "build:scheduler": "npm run build -w services/scheduler",
+        "build:worker": "npm run build -w services/worker",
+        "build:all": "npm run build:lib && npm run build:api && npm run build:scheduler && npm run build:worker"
+    }
+}

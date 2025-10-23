@@ -4,6 +4,7 @@ import {
   OnModuleInit,
   OnModuleDestroy,
 } from '@nestjs/common';
+import { JobMessage } from '@optio/shared/rabbitmq/rabbitmq.interface';
 import { RedisService } from '../redis/redis.service';
 import { RabbitMQService } from '../rabbitmq/rabbitmq.service';
 
@@ -123,14 +124,26 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
 
       // 5. Enqueue jobs to RabbitMQ at the controlled rate
       for (let i = 0; i < jobsToEnqueue; i++) {
+        // Check periodically if run is still active (every 1000 jobs)
+        // This allows quick response to Stop/Update commands during high-rate enqueueing
+        if (i > 0 && i % 1000 === 0) {
+          const currentState = await this.redisService.getRunState();
+          if (!currentState.running) {
+            this.logger.log(
+              `[scheduler] Run stopped mid-enqueueing, cancelled remaining ${jobsToEnqueue - i} jobs`,
+            );
+            break;
+          }
+        }
+
         // Atomically increment counter FIRST to get unique job ID (prevents race conditions!)
         const jobId = await this.redisService.incrementEnqueued();
 
         // Create job message with unique ID
-        const message = {
+        const message: JobMessage = {
           jobId,
           data: {
-            runId: state.startedAt,
+            runId: state.startedAt || new Date().toISOString(),
             number: Math.floor(Math.random() * 1000000), // Random number to process
             timestamp: new Date().toISOString(),
           },
