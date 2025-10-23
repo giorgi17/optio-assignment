@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import Redis from 'ioredis';
 import { ProgressGateway } from './progress.gateway';
-import { REDIS_CHANNELS } from '../redis/redis.constants';
-import { RunState } from '../redis/redis.interface';
+import { REDIS_CHANNELS } from '@optio/shared/dist/redis/redis.constants';
+import { RunState } from '@optio/shared/dist/redis/redis.interface';
 
 @Injectable()
 export class ProgressService implements OnModuleInit, OnModuleDestroy {

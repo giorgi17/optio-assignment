@@ -67,7 +67,9 @@ services:
             retries: 10
 
     api:
-        build: ../backend/services/api
+        build:
+            context: ../backend
+            dockerfile: services/api/Dockerfile
         container_name: optio-api
         depends_on:
             redis:
@@ -86,7 +88,9 @@ services:
         restart: unless-stopped
 
     scheduler:
-        build: ../backend/services/scheduler
+        build:
+            context: ../backend
+            dockerfile: services/scheduler/Dockerfile
         container_name: optio-scheduler
         depends_on:
             redis:
@@ -99,7 +103,9 @@ services:
         restart: unless-stopped
 
     worker:
-        build: ../backend/services/worker
+        build:
+            context: ../backend
+            dockerfile: services/worker/Dockerfile
         depends_on:
             rabbitmq:
                 condition: service_healthy
