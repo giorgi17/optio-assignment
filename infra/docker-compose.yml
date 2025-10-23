@@ -83,8 +83,18 @@ services:
             - AMQP_URL=amqp://guest:guest@rabbitmq:5672
             - ES_URL=http://elasticsearch:9200
             - PORT=3000
+        # No port mapping - nginx handles external access
+        restart: unless-stopped
+
+    nginx:
+        image: nginx:alpine
+        container_name: optio-nginx
+        depends_on:
+            - api
         ports:
-            - '3000:3000'
+            - '3000:80'
+        volumes:
+            - ./nginx.conf:/etc/nginx/nginx.conf:ro
         restart: unless-stopped
 
     scheduler:
