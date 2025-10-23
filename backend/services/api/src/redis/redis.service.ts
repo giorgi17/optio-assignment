@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { BaseRedisService } from '@optio/shared/dist/redis/base-redis.service';
-import { REDIS_KEYS } from '@optio/shared/dist/redis/redis.constants';
-import { RunState } from '@optio/shared/dist/redis/redis.interface';
+import { BaseRedisService } from '@optio/shared/redis/base-redis.service';
+import { REDIS_KEYS } from '@optio/shared/redis/redis.constants';
+import { RunState } from '@optio/shared/redis/redis.interface';
 
 @Injectable()
 export class RedisService extends BaseRedisService implements OnModuleInit {

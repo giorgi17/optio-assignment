@@ -12,7 +12,7 @@ import {
 } from './dto/run.dto';
 import { HealthResponseDto } from './dto/health.dto';
 import { RedisService } from './redis/redis.service';
-import { DEFAULT_RUN_STATE } from '@optio/shared/dist/redis/redis.interface';
+import { DEFAULT_RUN_STATE } from '@optio/shared/redis/redis.interface';
 
 @Injectable()
 export class AppService {

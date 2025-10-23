@@ -4,6 +4,7 @@ import {
   OnModuleInit,
   OnModuleDestroy,
 } from '@nestjs/common';
+import { JobMessage } from '@optio/shared/rabbitmq/rabbitmq.interface';
 import { RedisService } from '../redis/redis.service';
 import { RabbitMQService } from '../rabbitmq/rabbitmq.service';
 
@@ -127,10 +128,10 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
         const jobId = await this.redisService.incrementEnqueued();
 
         // Create job message with unique ID
-        const message = {
+        const message: JobMessage = {
           jobId,
           data: {
-            runId: state.startedAt,
+            runId: state.startedAt || new Date().toISOString(),
             number: Math.floor(Math.random() * 1000000), // Random number to process
             timestamp: new Date().toISOString(),
           },

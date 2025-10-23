@@ -10,9 +10,11 @@
     },
     "dependencies": {
         "@nestjs/common": "^10.0.0",
+        "amqplib": "^0.10.9",
         "ioredis": "^5.3.2"
     },
     "devDependencies": {
+        "@types/amqplib": "^0.10.7",
         "@types/node": "^24.9.1",
         "typescript": "^5.0.0"
     }

@@ -21,8 +21,7 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@optio/shared/*": ["../../../lib/*"]
+      "@optio/shared/*": ["../../lib/dist/*"]
     }
-  },
-  "include": ["src/**/*", "../../../lib/**/*"]
+  }
 }
